@@ -1,17 +1,14 @@
-# 📰 Government Gazette Monitor
+## 📅 Auto-Check Gazette Issue
 
-This Streamlit app monitors changes on the Government Gazette website and summarizes updates weekly.
+This app automatically checks the Government Gazette website for updates every Thursday.
 
-## 🔍 Features
+### How It Works
+- Fetches the latest issue date from the Gazette page.
+- Compares it with the last saved issue date.
+- If a new issue is detected, it updates the record and notifies the user.
 
-- ✅ Simple list of newly added and removed file links
-- ✅ Side-by-side visual comparison of the page content
-- ✅ Stores HTML snapshots locally for historical comparison
-
-## 🛠️ Setup Instructions
-
-1. **Clone or download the repository** to your local machine.
-
-2. **Install dependencies** using pip:
+### Setup
+1. Clone the repo.
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
