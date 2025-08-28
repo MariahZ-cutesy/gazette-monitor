@@ -1,17 +1,18 @@
-# Government Gazette Monitor
 
-This Streamlit app tracks weekly changes on the [Government Gazette of South Australia]ebsite. It compares the current page content with the previous week's snapshot and generates a short paragraph summarizing the updates.
+# 📰 Government Gazette Monitor
 
-## 🚀 Features
+This Streamlit app monitors changes on the Government Gazette website and summarizes updates weekly.
 
-- Fetches and stores weekly HTML snapshots of the Gazette page.
-- Compares current content with the previous version.
-- Summarizes changes in a concise paragraph.
-- Displays update summary in a user-friendly interface.
+## Features
 
-## 📦 Setup Instructions
+- ✅ Detects added and removed file links
+- ✅ Shows a side-by-side visual comparison of HTML content
+- ✅ Stores snapshots for historical comparison
 
-1. **Clone the repository**:
+## Setup Instructions
+
+1. **Clone the repository** or download the files manually.
+
+2. **Install dependencies**:
    ```bash
-   git clone https://github.com/your-username/gazette-monitor.git
-   cd gazette-monitor
+   pip install -r requirements.txt
