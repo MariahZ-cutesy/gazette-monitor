@@ -1,18 +1,17 @@
-
 # 📰 Government Gazette Monitor
 
 This Streamlit app monitors changes on the Government Gazette website and summarizes updates weekly.
 
-## Features
+## 🔍 Features
 
-- ✅ Detects added and removed file links
-- ✅ Shows a side-by-side visual comparison of HTML content
-- ✅ Stores snapshots for historical comparison
+- ✅ Simple list of newly added and removed file links
+- ✅ Side-by-side visual comparison of the page content
+- ✅ Stores HTML snapshots locally for historical comparison
 
-## Setup Instructions
+## 🛠️ Setup Instructions
 
-1. **Clone the repository** or download the files manually.
+1. **Clone or download the repository** to your local machine.
 
-2. **Install dependencies**:
+2. **Install dependencies** using pip:
    ```bash
    pip install -r requirements.txt
