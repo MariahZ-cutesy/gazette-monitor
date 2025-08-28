@@ -1,63 +1,86 @@
 import streamlit as st
 import requests
+from bs4 import BeautifulSoup
 import difflib
 import os
 from datetime import datetime
-from bs4 import BeautifulSoup
 
-# Define the URL to monitor
+# Constants
 URL = "https://governmentgazette.sa.gov.au/"
-DATA_DIR = "gazette_snapshots"
-os.makedirs(DATA_DIR, exist_ok=True)
+SNAPSHOT_DIR = "gazette_snapshots"
+CURRENT_SNAPSHOT = os.path.join(SNAPSHOT_DIR, "current.html")
+PREVIOUS_SNAPSHOT = os.path.join(SNAPSHOT_DIR, "previous.html")
 
-def fetch_page_content():
-    try:
-        response = requests.get(URL)
-        if response.status_code == 200:
-            return response.text
-        else:
-            return None
-    except Exception as e:
-        return None
+# Ensure snapshot directory exists
+os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
-def save_snapshot(content, filename):
-    with open(os.path.join(DATA_DIR, filename), "w", encoding="utf-8") as f:
+# Fetch HTML content
+def fetch_html(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.text
+
+# Extract file links from HTML
+def extract_file_links(html):
+    soup = BeautifulSoup(html, "html.parser")
+    return sorted(set(a['href'] for a in soup.find_all("a", href=True)))
+
+# Save HTML snapshot
+def save_snapshot(content, path):
+    with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 
-def load_snapshot(filename):
-    path = os.path.join(DATA_DIR, filename)
+# Load HTML snapshot
+def load_snapshot(path):
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
-    return None
+    return ""
 
-def summarize_changes(old, new):
-    diff = difflib.unified_diff(old.splitlines(), new.splitlines(), lineterm="")
-    changes = [line for line in diff if line.startswith("+ ") or line.startswith("- ")]
-    if changes:
-        return f"There have been updates to the Government Gazette page since last Thursday. Notable changes include {len(changes)} lines of content added or removed."
-    else:
-        return "No significant changes detected on the Government Gazette page since last Thursday."
+# Load previous snapshot
+previous_html = load_snapshot(CURRENT_SNAPSHOT)
+if previous_html:
+    save_snapshot(previous_html, PREVIOUS_SNAPSHOT)
+
+# Fetch current snapshot
+try:
+    current_html = fetch_html(URL)
+    save_snapshot(current_html, CURRENT_SNAPSHOT)
+except Exception as e:
+    st.error(f"Error fetching the website: {e}")
+    st.stop()
+
+# Extract and compare links
+previous_links = extract_file_links(previous_html)
+current_links = extract_file_links(current_html)
+
+new_links = [link for link in current_links if link not in previous_links]
+removed_links = [link for link in previous_links if link not in current_links]
 
 # Streamlit UI
-st.title("Government Gazette Monitor")
-st.write("This app monitors changes on the Government Gazette website and summarizes updates weekly.")
+st.title("📰 Government Gazette Monitor")
+st.subheader("🔗 File Change Summary")
 
-today = datetime.now().strftime("%Y-%m-%d")
-current_snapshot = fetch_page_content()
-
-if current_snapshot:
-    save_snapshot(current_snapshot, f"{today}.html")
-
-    # Find the most recent previous snapshot
-    snapshots = sorted([f for f in os.listdir(DATA_DIR) if f.endswith(".html")])
-    if len(snapshots) >= 2:
-        previous_snapshot_file = snapshots[-2]
-        previous_snapshot = load_snapshot(previous_snapshot_file)
-        summary = summarize_changes(previous_snapshot, current_snapshot)
-        st.subheader("Summary of Changes")
-        st.write(summary)
-    else:
-        st.write("Not enough historical data to compare changes yet. Please check back next week.")
+if new_links:
+    st.markdown("**New Files Added:**")
+    for link in new_links:
+        st.markdown(f"- 📄 {link}")
 else:
-    st.error("Failed to fetch the Government Gazette website.")
+    st.markdown("No new files added.")
+
+if removed_links:
+    st.markdown("**Removed Files:**")
+    for link in removed_links:
+        st.markdown(f"- ~~{link}~~")
+else:
+    st.markdown("No files removed.")
+
+# Visual HTML comparison
+st.subheader("🏛️ Visual HTML Comparison")
+diff = difflib.HtmlDiff().make_file(
+    previous_html.splitlines(),
+    current_html.splitlines(),
+    fromdesc="Last Snapshot",
+    todesc="Current Snapshot"
+)
+st.components.v1.html(diff, height=600, scrolling=True)
